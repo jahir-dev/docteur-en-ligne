@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Tag;
+use App\Models\Specialite;
 
 class TagsController extends Controller
 {
@@ -13,8 +14,7 @@ class TagsController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function index()
-    {
-        //
+    {        
         $tags = Tag::all();
         return $tags;
     }
@@ -27,6 +27,18 @@ class TagsController extends Controller
      */
     public function store(Request $request)
     {
+        //check the label
+        if(!$request->label){
+            return response('No label , a valid tag label is expected.', 400)
+                  ->header('Content-Type', 'text/plain');
+        }
+        //check duplication of specialité
+        $tag = Tag::whereLabel($request->label)->first();
+        if($tag){
+            return response('Duplicated, tag already exist', 200)
+                  ->header('Content-Type', 'text/plain');
+        }
+        //create the tag
         $tag = new Tag();
         $tag->label = $request->label;
         $tag->save();
@@ -41,17 +53,16 @@ class TagsController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function show($id)
-    {
-        //
+    {        
         $tag = Tag::find($id);
-
-        if($tag){
-            return $tag;
+        //check if tag exist
+        if(!$tag){
+            return response('Tag not found, Bad tag ID : '. $id , 404)
+                  ->header('Content-Type', 'text/plain; charset=utf8')
+                  ->header('charset','utf8');
         }
-        else{
-            return response('Tag not found',404)
-                  ->header('Content-Type', 'text/plain');
-        }
+        
+        return $tag;
     }
 
     /**
@@ -63,7 +74,28 @@ class TagsController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $tag = Tag::find($id);
+        //check if tag exist
+        if(!$tag){
+            return response('Tag not found, Bad tag ID : '. $id , 404)
+                  ->header('Content-Type', 'text/plain; charset=utf8')
+                  ->header('charset','utf8');
+        }
+        //check the label
+        if(!$request->label){
+            return response('No label , a valid tag label is expected.', 400)
+                  ->header('Content-Type', 'text/plain');
+        }
+        //check duplication of specialité
+        $tagLabel = Tag::whereLabel($request->label)->first();
+        if($tagLabel){
+            return response('Duplicated, tag already exist', 200)
+                  ->header('Content-Type', 'text/plain');
+        }
+        
+        $tag->label = $request->label;
+        $tag->save();
+        return response('Success, tag updated',200);
     }
 
     /**
@@ -74,6 +106,17 @@ class TagsController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $specialites = Specialite::whereHas('tags', function ($query) use ($id) {
+            $query->where('tag_id', '=', $id);
+        })->get();
+
+        if(!empty($specialites)){
+            return response('Error, tag associated to specialites', 400)
+                  ->header('Content-Type', 'text/plain');
+        }
+        $tag = Tag::find($id);
+        $tag->delete();
+        return response('Success, tag deleted', 200)
+                  ->header('Content-Type', 'text/plain');
     }
 }

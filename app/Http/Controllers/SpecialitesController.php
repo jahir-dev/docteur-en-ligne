@@ -21,17 +21,6 @@ class SpecialitesController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        
-
-    }
-
-    /**
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
@@ -98,6 +87,14 @@ class SpecialitesController extends Controller
     public function show($id)
     {
         //
+        $specialite = Specialite::where('id',$id)->with('tags')->first();
+        
+        if (!$specialite){
+            return response('Specialité not found, Bad tag ID : '. $id , 404)
+                  ->header('Content-Type', 'text/plain; charset=utf8')
+                  ->header('charset','utf8');
+        }
+        return $specialite;
     }
 
     /**
