@@ -15,8 +15,4 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/lamia', function(){
-    return 'hello lamia';
-});
-
 Route::get('/hello', 'TagsController@index');
