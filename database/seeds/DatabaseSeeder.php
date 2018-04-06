@@ -14,7 +14,6 @@ class DatabaseSeeder extends Seeder
     public function run()
     {
         // $this->call(UsersTableSeeder::class);
-
         factory(App\Models\Tag::class, 20)->create();
         factory(App\Models\Specialite::class, 5)->create();
         
@@ -29,15 +28,15 @@ class DatabaseSeeder extends Seeder
         
         factory(App\Models\Medecin::class, 20)->create();
 
-        
-
         factory(App\Models\Post::class, 10)->create();
 
         // Populate the pivot table
         $medecins = App\Models\Medecin::all();
 
-        App\Models\Post::all()->each(function ($post) use ($medecins) {
-
+        App\Models\Post::all()->each(function ($post) use ($medecins, $tags) {
+            $post->tags()->attach(
+                $tags->random(rand(1,5))->pluck('id')->toArray()
+            );
             $post->medecins()->attach(
                 $medecins->random(rand(1, 5))->pluck('id')->toArray()
             );
@@ -46,11 +45,10 @@ class DatabaseSeeder extends Seeder
 
             foreach($reponses as $reponse)
             {
-                $post->medecins()->updateExistingPivot($reponse->id, ['reponse' => "testing "]);
+                $post->medecins()->updateExistingPivot($reponse->id, ['reponse' => "Lorem ipsum dolor sit amet consectetur adipisicing elit. Tenetur, earum fugit? Et odio debitis quibusdam nam quos, perspiciatis officia numquam quae facilis. "]);
             }
 
         });
-
 
     }
 }

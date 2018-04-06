@@ -108,7 +108,7 @@ class TagsController extends Controller
     {
         $specialites = Specialite::whereHas('tags', function ($query) use ($id) {
             $query->where('tag_id', '=', $id);
-        })->get();
+        })->get()->first();
 
         if(!empty($specialites)){
             return response('Error, tag associated to specialites', 400)

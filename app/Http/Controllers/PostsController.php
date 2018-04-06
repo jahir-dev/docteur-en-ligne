@@ -3,11 +3,11 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Specialite;
+use App\Models\Post;
 use App\Models\Tag;
-use App\Models\Medecin;
+use App\Models\Specialite;
 
-class SpecialitesController extends Controller
+class PostsController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -16,9 +16,8 @@ class SpecialitesController extends Controller
      */
     public function index()
     {
-        //
-        $specialite = Specialite::with('tags')->get();
-        return $specialite;
+        $posts = Post::with('tags','medecins')->get();
+        return $posts;
     }
 
     /**
@@ -29,19 +28,30 @@ class SpecialitesController extends Controller
      */
     public function store(Request $request)
     {
-        //check if tags' ids are provided and fetch models from database into array $tags
         /*
             {
-                "label" : "name",
-                "tags" : ["name","name"..]
+                "titre" : "name",
+                "description" : "description",
+                "tags" : ["id","id"..]
             }
         */
+        //check the title
+        if(!$request->titre){
+            return response('No title , a valid post title is expected.', 400)
+                  ->header('Content-Type', 'text/plain');
+        }
+        //check the discription
+        if(!$request->description){
+            return response('No description , a valid post description is expected.', 400)
+                  ->header('Content-Type', 'text/plain');
+        }
+
         if($request->tags){
             $tags_ids = $request->tags;
             //$tags = Tag::find($tags_ids);
             $tags = [];
             foreach ($tags_ids as $tagId){
-                $tag = Tag::find($tagId);
+                $tag = Tag::find($tagId)->first();
                 if($tag){
                     $tags [] = $tag;
                 }else{
@@ -51,7 +61,7 @@ class SpecialitesController extends Controller
                 
             }
         }else{
-            return response('No tags given , valid tags ids expected.', 400)
+            return response('No tags given , valid tags ids are expected.', 400)
                   ->header('Content-Type', 'text/plain');
         }
         //make sure the $tags array is not empty
@@ -59,23 +69,14 @@ class SpecialitesController extends Controller
             return response('No tags given , valid tags ids expected.', 400)
                   ->header('Content-Type', 'text/plain');
         }
-        //check the label
-        if(!$request->label){
-            return response('No label , a valid specialite label is expected.', 400)
-                  ->header('Content-Type', 'text/plain');
-        }
-        //check duplication of specialité
-        $specialite = Specialite::whereLabel($request->label)->first();
-        if($specialite){
-            return response('Duplicated, specialité already exist', 200)
-                  ->header('Content-Type', 'text/plain');
-        }
-        //create specialité and associate its tags
-        $specialite = new Specialite();
-        $specialite->label = $request->label;
-        $specialite->save();
-        $specialite->tags()->saveMany($tags);
-        return response('Specialite created',200)
+        
+        //Ajout du post
+        $post = new Post();
+        $post->titre = $request->titre;
+        $post->description = $request->description;
+        $post->save();
+        $post->tags()->saveMany($tags);
+        return response('Post created',200)
                 ->header('Content-Type','text/plain');
     }
 
@@ -87,15 +88,14 @@ class SpecialitesController extends Controller
      */
     public function show($id)
     {
-        //
-        $specialite = Specialite::where('id',$id)->with('tags')->first();
+        $post = Post::where('id',$id)->with('medecins','tags')->first();
         
-        if (!$specialite){
-            return response('Specialité not found, Bad ID : '. $id , 404)
+        if (!$post){
+            return response('Post not found, Bad ID : '. $id , 404)
                   ->header('Content-Type', 'text/plain; charset=utf8')
                   ->header('charset','utf8');
         }
-        return $specialite;
+        return $post;
     }
 
     /**
@@ -107,31 +107,38 @@ class SpecialitesController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //find specialite
-        $specialite = Specialite::where('id',$id)->first();
-        if (!$specialite){
-            return response('Specialité not found, Bad ID : '. $id , 404)
+        //find post
+        $post = Post::where('id',$id)->first();        
+        if (!$post){
+            return response('Post not found, Bad ID : '. $id , 404)
                   ->header('Content-Type', 'text/plain; charset=utf8')
                   ->header('charset','utf8');
         }
-
-        //get the tags
+         //check the title
+         if(!$request->titre){
+            return response('No title , a valid post title is expected.', 400)
+                  ->header('Content-Type', 'text/plain');
+        }
+        //check the discription
+        if(!$request->description){
+            return response('No description , a valid post description is expected.', 400)
+                  ->header('Content-Type', 'text/plain');
+        }
         if($request->tags){
             $tags_ids = $request->tags;
             //$tags = Tag::find($tags_ids);
             $tags = [];
             foreach ($tags_ids as $tagId){
-                $tag = Tag::find($tagId);
+                $tag = Tag::find($tagId)->first();
                 if($tag){
                     $tags [] = $tag;
                 }else{
                     return response('Tag not found, Bad tag ID : '. $tagId , 404)
                   ->header('Content-Type', 'text/plain');
-                }
-                
+                }   
             }
         }else{
-            return response('No tags given , valid tags ids expected.', 400)
+            return response('No tags given , valid tags ids are expected.', 400)
                   ->header('Content-Type', 'text/plain');
         }
         //make sure the $tags array is not empty
@@ -139,18 +146,14 @@ class SpecialitesController extends Controller
             return response('No tags given , valid tags ids expected.', 400)
                   ->header('Content-Type', 'text/plain');
         }
-        //check the label
-        if(!$request->label){
-            return response('No label , a valid specialite label is expected.', 400)
-                  ->header('Content-Type', 'text/plain');
-        }
-
-        $specialite->label = $request->label;
-        $specialite->save();
-        $specialite->tags()->sync($tags);
-        return response('Specialite updated',200)
+        
+        //update post
+        $post->titre = $request->titre;
+        $post->description = $request->description;
+        $post->save();
+        $post->tags()->sync($tags);
+        return response('Post created',200)
                 ->header('Content-Type','text/plain');
-
     }
 
     /**
@@ -161,19 +164,6 @@ class SpecialitesController extends Controller
      */
     public function destroy($id)
     {
-        $medecin = Medecin::whereHas('specialite', function ($query) use ($id) {
-            $query->where('specialite_id', '=', $id);
-        })->get()->first();
-
-        
-        if(!empty($medecin)){
-            return response('Error, specialite associated to medecin', 400)
-                  ->header('Content-Type', 'text/plain');
-        }
-
-        $specialite = Specialite::find($id);
-        $specialite->delete();
-        return response('Success, specialite deleted', 200)
-                  ->header('Content-Type', 'text/plain');
+        //
     }
 }
