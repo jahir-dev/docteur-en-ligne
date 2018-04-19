@@ -17,7 +17,7 @@ class SpecialitesController extends Controller
     public function index()
     {
         //
-        $specialite = Specialite::with('tags')->get();
+        $specialite = Specialite::with('tags')->orderBy('created_at', 'desc')->get();
         return $specialite;
     }
 

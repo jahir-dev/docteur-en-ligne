@@ -18,5 +18,6 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 });
 
 Route::resource('tags', 'TagsController');
-Route::resource('specialite','SpecialitesController');
+Route::resource('specialites','SpecialitesController');
 Route::resource('posts','PostsController');
+Route::resource('reponse','PostMedecinController');

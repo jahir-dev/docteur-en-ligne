@@ -50,8 +50,15 @@ class PostsController extends Controller
             $tags_ids = $request->tags;
             //$tags = Tag::find($tags_ids);
             $tags = [];
+
+            // foreach ($tags_ids as $tagId){
+            //     $tag = Tag::find($tagId);
+            //     var_dump($tag);
+            // }
+            // die('end');
+
             foreach ($tags_ids as $tagId){
-                $tag = Tag::find($tagId)->first();
+                $tag = Tag::find($tagId);
                 if($tag){
                     $tags [] = $tag;
                 }else{

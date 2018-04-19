@@ -13,6 +13,7 @@ class CreateMedecinsTable extends Migration
      */
     public function up()
     {
+        Schema::enableForeignKeyConstraints();
         Schema::create('medecins', function (Blueprint $table) {
             $table->increments('id');
             $table->string('cin',8);
@@ -20,6 +21,7 @@ class CreateMedecinsTable extends Migration
             $table->string('prenom');
             
             $table->integer('specialite_id')->unsigned();
+            // $table->foreign('specialite_id')->references('id')->on('specialites');
 
             $table->string('telephone');
             $table->string('email');

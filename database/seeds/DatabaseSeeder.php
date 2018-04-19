@@ -14,25 +14,34 @@ class DatabaseSeeder extends Seeder
     public function run()
     {
         // $this->call(UsersTableSeeder::class);
+        //tags
         factory(App\Models\Tag::class, 20)->create();
+        //Specialite
         factory(App\Models\Specialite::class, 5)->create();
         
+        //get Tags
         $tags = App\Models\Tag::all();
         
-        // Populate the pivot table
+        // Attach Tags to specialite
         App\Models\Specialite::all()->each(function ($specialite) use ($tags) {
             $specialite->tags()->attach(
-                $tags->random(rand(1, 5))->pluck('id')->toArray()
+                $tags->random(rand(2, 5))->pluck('id')->toArray()
             );
         });
         
+        //Medecins
         factory(App\Models\Medecin::class, 20)->create();
-
+        //Internaute
+        factory(App\Models\Internaute::class, 10)->create();
+        //Posts
         factory(App\Models\Post::class, 10)->create();
 
-        // Populate the pivot table
+        // get Medecins
         $medecins = App\Models\Medecin::all();
+        // get Internaute
+        // $internautes = App\Models\Internaute::all();
 
+        //Attach medecins response to posts
         App\Models\Post::all()->each(function ($post) use ($medecins, $tags) {
             $post->tags()->attach(
                 $tags->random(rand(1,5))->pluck('id')->toArray()

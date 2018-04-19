@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use App\Models\Tag;
 use App\Models\Specialite;
@@ -15,7 +16,7 @@ class TagsController extends Controller
      */
     public function index()
     {        
-        $tags = Tag::all();
+        $tags = DB::table('tags')->orderBy('created_at', 'desc')->get();
         return $tags;
     }
 
@@ -95,7 +96,8 @@ class TagsController extends Controller
         
         $tag->label = $request->label;
         $tag->save();
-        return response('Success, tag updated',200);
+        return response('Success, tag updated',200)
+            ->header('Content-Type', 'text/plain');
     }
 
     /**
